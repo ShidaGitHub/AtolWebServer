@@ -1,0 +1,32 @@
+{
+  "web":{
+    "port":16732
+  },
+  "resultsSend":{
+    "uri":"http://127.0.0.1/agent_test/hs/atol/",
+    "login":"Atol",
+    "password":"Atol"
+  },
+  "devices":{
+    "kkt_Example_0":{
+      "is_active":true,
+      "ComFile":"1",
+      "OfdChannel":"0",
+      "UsbDevicePath":"auto",
+      "BaudRate":"115200",
+      "Port":"2",
+      "IPPort":"5555",
+      "IPAddress":"192.168.1.10"
+    },
+    "kkt_Example_1":{
+      "is_active":true,
+      "ComFile":"1",
+      "OfdChannel":"0",
+      "UsbDevicePath":"auto",
+      "BaudRate":"115200",
+      "Port":"2",
+      "IPPort":"5555",
+      "IPAddress":"192.168.1.11"
+    }
+  }
+}
