@@ -52,6 +52,7 @@
 
 
     <dependencies>
+        <!-- logging -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -68,6 +69,7 @@
             <version>2.11.1</version>
         </dependency>
 
+        <!-- hibernate -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-agroal</artifactId>
@@ -85,12 +87,14 @@
             <version>7.2.1.jre8</version>
         </dependency>
 
+        <!-- JSON -->
         <dependency>
             <groupId>com.jsoniter</groupId>
             <artifactId>jsoniter</artifactId>
             <version>0.9.23</version>
         </dependency>
 
+        <!-- JETTY -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
@@ -136,7 +140,15 @@
             <artifactId>jetty-client</artifactId>
             <version>9.4.19.v20190610</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>9.4.19.v20190610</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
+            <version>9.4.19.v20190610</version>
+        </dependency>
     </dependencies>
 </project>

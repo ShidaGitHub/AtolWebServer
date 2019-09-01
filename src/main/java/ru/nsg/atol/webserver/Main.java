@@ -13,6 +13,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.webapp.Configuration;
+import org.eclipse.jetty.webapp.WebAppContext;
 import ru.atol.drivers10.fptr.Fptr;
 import ru.nsg.atol.webserver.database.DBProvider;
 import ru.nsg.atol.webserver.serverlets.TaskRecipientServlet;
@@ -32,9 +33,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Main {
     private static Logger logger = LogManager.getLogger(Main.class);
@@ -130,6 +130,19 @@ public class Main {
         ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
         holderDefault.setInitParameter("dirAllowed", "false");
         servletContextHandler.addServlet(holderDefault, "/");
+
+        final String webappDir = Main.class.getResource("webapp").toExternalForm();
+        WebAppContext webappContext = new WebAppContext(webappDir, "/faces/") {
+            // Workaround to support JSF annotation scanning in Maven environment (part1)
+            @Override
+            public String getResourceAlias(String alias) {
+                final Map<String, String> resourceAliases = getResourceAliases();
+                if (resourceAliases == null) return null;
+                return resourceAliases.entrySet().stream().filter(oneAlias -> alias.startsWith(oneAlias.getKey())).findFirst().
+                    map(oneAlias -> alias.replace(oneAlias.getKey(), oneAlias.getValue())).orElse(null);
+            }
+        };
+
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{servletContextHandler});
         server.setHandler(handlers);
@@ -266,5 +279,4 @@ public class Main {
             logger.warn("TrayIcon could not be added.");
         }
     }
-
 }
