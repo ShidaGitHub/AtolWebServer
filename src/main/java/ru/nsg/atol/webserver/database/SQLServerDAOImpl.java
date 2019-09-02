@@ -385,7 +385,6 @@ public class SQLServerDAOImpl implements DatabaseDAO {
             Query query = session.createSQLQuery("SELECT uuid, timestamp, status, error_code, error_description, result_data, docNumber " +
                                                     "FROM json_results " +
                                                     "WHERE send_code = 0 AND status > 1");
-            query.setMaxResults(500);
 
             Iterator iterator= query.list().iterator();
             while(iterator.hasNext()) {
