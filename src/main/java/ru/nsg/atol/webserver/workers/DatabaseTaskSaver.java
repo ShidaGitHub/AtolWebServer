@@ -3,6 +3,7 @@ package ru.nsg.atol.webserver.workers;
 import com.jsoniter.any.Any;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import ru.nsg.atol.webserver.Main;
 import ru.nsg.atol.webserver.entety.Task;
 import ru.nsg.atol.webserver.database.DBProvider;
 
@@ -50,11 +51,17 @@ public class DatabaseTaskSaver extends Thread {
 
                 if (portion.size() == 500){
                     DBProvider.db.addTaskList(portion);
+                    portion.stream().forEach(task -> {
+                        Main.getDriverWorkerByDevise(task.getDevice()).offer(task);
+                    });
                     portion.clear();
                 }
             }
             if (!portion.isEmpty()) {
                 DBProvider.db.addTaskList(portion);
+                portion.stream().forEach(task -> {
+                    Main.getDriverWorkerByDevise(task.getDevice()).offer(task);
+                });
             }
         }
     }

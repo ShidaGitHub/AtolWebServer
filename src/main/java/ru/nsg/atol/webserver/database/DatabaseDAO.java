@@ -15,6 +15,7 @@ public interface DatabaseDAO {
     boolean updateTaskResult(TaskResult taskResult);
     boolean setTaskReady(String uuid);
     Task getNextTask(String device);
+    List<Task> getNotReadyTasks(String device);
     boolean cancelTask(String uuid);
     boolean blockDBDevice(BlockRecord blockRecord);
     boolean unblockDBDevice(String device);

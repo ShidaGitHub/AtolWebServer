@@ -9,25 +9,31 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import ru.nsg.atol.webserver.entety.Task;
 import ru.nsg.atol.webserver.entety.TaskResult;
 import ru.nsg.atol.webserver.database.DBProvider;
 import ru.nsg.atol.webserver.utils.Settings;
+import ru.nsg.atol.webserver.utils.TaskCompleteListener;
 
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-public class SenderWorker extends Thread {
+public class SenderWorker extends Thread implements TaskCompleteListener {
     private static Logger logger = LogManager.getLogger(SenderWorker.class);
+    private BlockingQueue<TaskResult> queueToSend;
     private HttpClient httpClient;
+    private LocalDateTime checkDate;
 
     public SenderWorker() {
         setName(this.getClass().getName());
+        checkDate = LocalDateTime.now();
+        queueToSend = new LinkedBlockingQueue(100000);
     }
 
     @Override
@@ -50,7 +56,20 @@ public class SenderWorker extends Thread {
                 continue;
             }
 
-            List<TaskResult> resultList = DBProvider.db.getResultTasksToSend();
+            //Каждые 10 мин проверить базу и при необхоимостии пополнить очередь отправки из базы.
+            if (LocalDateTime.now().getMinute() % 5 == 0 && checkDate.getMinute() != LocalDateTime.now().getMinute()){
+                checkDate = LocalDateTime.now();
+                List<TaskResult> resultList = DBProvider.db.getResultTasksToSend();
+                if (resultList != null){
+                    resultList.stream().forEach(taskResult -> queueToSend.offer(taskResult));
+                }
+            }
+
+            List<TaskResult> resultList = new LinkedList<>();
+            while (!queueToSend.isEmpty() && resultList.size() <= 500){
+                resultList.add(queueToSend.poll());
+            }
+
             if (resultList != null && !resultList.isEmpty()){
                 try {
                     String login = Settings.getResultsSendLogin();
@@ -102,4 +121,9 @@ public class SenderWorker extends Thread {
         }
     }
 
+    @Override
+    public void onTaskReadyToSend(TaskResult taskResult) {
+        queueToSend.offer(taskResult);
+    }
 }
+

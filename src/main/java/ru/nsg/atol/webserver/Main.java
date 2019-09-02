@@ -131,36 +131,22 @@ public class Main {
         holderDefault.setInitParameter("dirAllowed", "false");
         servletContextHandler.addServlet(holderDefault, "/");
 
-        final String webappDir = Main.class.getResource("webapp").toExternalForm();
-        WebAppContext webappContext = new WebAppContext(webappDir, "/faces/") {
-            // Workaround to support JSF annotation scanning in Maven environment (part1)
-            @Override
-            public String getResourceAlias(String alias) {
-                final Map<String, String> resourceAliases = getResourceAliases();
-                if (resourceAliases == null) return null;
-                return resourceAliases.entrySet().stream().filter(oneAlias -> alias.startsWith(oneAlias.getKey())).findFirst().
-                    map(oneAlias -> alias.replace(oneAlias.getKey(), oneAlias.getValue())).orElse(null);
-            }
-        };
-
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{servletContextHandler});
         server.setHandler(handlers);
         server.start();
-
-        Settings.getDevicesList().keySet().stream().forEach(key -> {
-            DriverWorker driverWorker = new DriverWorker(key);
-            driverMap.put(key, driverWorker);
-            driverWorker.start();
-            logger.info("driverWorker for {} {}", key, " started");
-        });
 
         if(!Settings.getResultsSendUri().isEmpty()){
             senderWorker = new SenderWorker();
             senderWorker.start();
             logger.info("resSender started");
         }
-
+        Settings.getDevicesList().keySet().stream().forEach(key -> {
+            DriverWorker driverWorker = new DriverWorker(key, senderWorker);
+            driverMap.put(key, driverWorker);
+            driverWorker.start();
+            logger.info("driverWorker for {} {}", key, " started");
+        });
         server.join();
     }
 
@@ -278,5 +264,9 @@ public class Main {
         } catch (IOException | AWTException e) {
             logger.warn("TrayIcon could not be added.");
         }
+    }
+
+    public static DriverWorker getDriverWorkerByDevise(String device){
+        return driverMap.get(device);
     }
 }
