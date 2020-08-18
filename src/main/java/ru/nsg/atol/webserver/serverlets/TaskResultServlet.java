@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class TaskResultServlet extends HttpServlet {
-    private static Logger logger = LogManager.getLogger(TaskResultServlet.class);
+    private static final Logger logger = LogManager.getLogger(TaskResultServlet.class);
 
     public TaskResultServlet() {}
 

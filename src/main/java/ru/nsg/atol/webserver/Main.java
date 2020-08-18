@@ -13,7 +13,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.webapp.Configuration;
-import org.eclipse.jetty.webapp.WebAppContext;
 import ru.atol.drivers10.fptr.Fptr;
 import ru.nsg.atol.webserver.database.DBProvider;
 import ru.nsg.atol.webserver.serverlets.TaskRecipientServlet;
@@ -34,13 +33,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Main {
-    private static Logger logger = LogManager.getLogger(Main.class);
+    private static final Logger logger = LogManager.getLogger(Main.class);
     private static Server server;
     private static DatabaseTaskSaver databaseTaskSaver;
-    private static HashMap<String, DriverWorker> driverMap = new HashMap();
+    private static final HashMap<String, DriverWorker> driverMap = new HashMap();
     private static SenderWorker senderWorker;
 
     public static void main(String[] args) {

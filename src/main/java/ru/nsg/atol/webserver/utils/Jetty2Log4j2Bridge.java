@@ -6,8 +6,8 @@ import org.eclipse.jetty.util.log.AbstractLogger;
 import org.eclipse.jetty.util.log.Logger;
 
 public class Jetty2Log4j2Bridge extends AbstractLogger {
-    private org.apache.logging.log4j.Logger logger;
-    private String name;
+    private final org.apache.logging.log4j.Logger logger;
+    private final String name;
 
     public Jetty2Log4j2Bridge(String name) {
         this.name = name;

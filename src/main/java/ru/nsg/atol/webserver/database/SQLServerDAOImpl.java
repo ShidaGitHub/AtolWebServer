@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SQLServerDAOImpl implements DatabaseDAO {
-    private static Logger logger = LogManager.getLogger(SQLServerDAOImpl.class);
+    private static final Logger logger = LogManager.getLogger(SQLServerDAOImpl.class);
 
     @Override
     public boolean init(){

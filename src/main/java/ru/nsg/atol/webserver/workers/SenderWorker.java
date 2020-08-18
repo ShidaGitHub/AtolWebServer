@@ -9,9 +9,8 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import ru.nsg.atol.webserver.entety.Task;
-import ru.nsg.atol.webserver.entety.TaskResult;
 import ru.nsg.atol.webserver.database.DBProvider;
+import ru.nsg.atol.webserver.entety.TaskResult;
 import ru.nsg.atol.webserver.utils.Settings;
 import ru.nsg.atol.webserver.utils.TaskCompleteListener;
 
@@ -20,14 +19,15 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.stream.Collector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class SenderWorker extends Thread implements TaskCompleteListener {
-    private static Logger logger = LogManager.getLogger(SenderWorker.class);
-    private BlockingQueue<TaskResult> queueToSend;
-    private HttpClient httpClient;
+    private static final Logger logger = LogManager.getLogger(SenderWorker.class);
+    private final BlockingQueue<TaskResult> queueToSend;
     private LocalDateTime checkDate;
 
     public SenderWorker() {
@@ -39,7 +39,7 @@ public class SenderWorker extends Thread implements TaskCompleteListener {
     @Override
     public void run() {
         long sleepTimeout = 100;
-        httpClient = new HttpClient();
+        HttpClient httpClient = new HttpClient();
         httpClient.setConnectTimeout(3000);
         httpClient.setIdleTimeout(900000);
         try {

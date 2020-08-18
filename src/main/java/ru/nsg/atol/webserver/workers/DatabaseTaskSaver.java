@@ -51,17 +51,13 @@ public class DatabaseTaskSaver extends Thread {
 
                 if (portion.size() == 500){
                     DBProvider.db.addTaskList(portion);
-                    portion.stream().forEach(task -> {
-                        Main.getDriverWorkerByDevise(task.getDevice()).offer(task);
-                    });
+                    portion.stream().forEach(task -> Main.getDriverWorkerByDevise(task.getDevice()).offer(task));
                     portion.clear();
                 }
             }
             if (!portion.isEmpty()) {
                 DBProvider.db.addTaskList(portion);
-                portion.stream().forEach(task -> {
-                    Main.getDriverWorkerByDevise(task.getDevice()).offer(task);
-                });
+                portion.stream().forEach(task -> Main.getDriverWorkerByDevise(task.getDevice()).offer(task));
             }
         }
     }
