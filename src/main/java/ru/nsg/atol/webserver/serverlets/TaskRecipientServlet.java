@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class TaskRecipientServlet extends HttpServlet {
-    private static Logger logger = LogManager.getLogger(TaskRecipientServlet.class);
+    private static final Logger logger = LogManager.getLogger(TaskRecipientServlet.class);
 
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.sendError(405);

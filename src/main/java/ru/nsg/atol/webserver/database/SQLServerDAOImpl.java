@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SQLServerDAOImpl implements DatabaseDAO {
-    private static Logger logger = LogManager.getLogger(SQLServerDAOImpl.class);
+    private static final Logger logger = LogManager.getLogger(SQLServerDAOImpl.class);
 
     @Override
     public boolean init(){
@@ -336,6 +336,34 @@ public class SQLServerDAOImpl implements DatabaseDAO {
     }
 
     @Override
+    public List<Task> getNotReadyTasks(String device) {
+        LinkedList<Task> res = new LinkedList<>();
+        try (Session session = HibernateUtility.getSessionFactory().openSession()) {
+            Query query = session.createSQLQuery("SELECT uuid, data, timestamp, docNumber FROM json_task WHERE device = :device AND is_ready != 1 AND is_canceled != 1");
+            query.setParameter("device", device);
+
+            Iterator iterator= query.list().iterator();
+            while (iterator.hasNext()) {
+                Object[] tuple = (Object[]) iterator.next();
+                Task task = new Task((String) tuple[0]);
+                task.setDevice(device);
+                task.setData((String) tuple[1]);
+                task.setTimestamp(new Date());
+                task.setDocNumber((String) tuple[3]);
+                task.setReady(false);
+                task.setCanceled(false);
+
+                res.add(task);
+            }
+            session.close();
+            return res;
+        } catch (PersistenceException pe) {
+            logger.error("Can't get next task ", pe);
+            return null;
+        }
+    }
+
+    @Override
     public synchronized boolean cancelTask(String uuid) {
         try (Session session = HibernateUtility.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
@@ -357,7 +385,6 @@ public class SQLServerDAOImpl implements DatabaseDAO {
             Query query = session.createSQLQuery("SELECT uuid, timestamp, status, error_code, error_description, result_data, docNumber " +
                                                     "FROM json_results " +
                                                     "WHERE send_code = 0 AND status > 1");
-            query.setMaxResults(500);
 
             Iterator iterator= query.list().iterator();
             while(iterator.hasNext()) {

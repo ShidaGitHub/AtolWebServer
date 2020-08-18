@@ -10,20 +10,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Settings {
-    private static Logger logger = LogManager.getLogger(Settings.class);
+    private static final Logger logger = LogManager.getLogger(Settings.class);
     private static Any jsonSettings;
 
     private Settings() {}
 
     protected static Any getJsonObject() throws IOException{
         if (jsonSettings == null){
-            jsonSettings = JsonIterator.deserialize(Files.lines(Paths.get(System.getProperty("settings.file"))).collect(Collectors.joining()));;
+            jsonSettings = JsonIterator.deserialize(Files.lines(Paths.get(System.getProperty("settings.file"))).collect(Collectors.joining()));
         }
         return jsonSettings;
     }

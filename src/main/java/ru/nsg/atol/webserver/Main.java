@@ -32,15 +32,13 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.HashMap;
 
 public class Main {
-    private static Logger logger = LogManager.getLogger(Main.class);
+    private static final Logger logger = LogManager.getLogger(Main.class);
     private static Server server;
     private static DatabaseTaskSaver databaseTaskSaver;
-    private static HashMap<String, DriverWorker> driverMap = new HashMap();
+    private static final HashMap<String, DriverWorker> driverMap = new HashMap();
     private static SenderWorker senderWorker;
 
     public static void main(String[] args) {
@@ -130,24 +128,23 @@ public class Main {
         ServletHolder holderDefault = new ServletHolder("default", DefaultServlet.class);
         holderDefault.setInitParameter("dirAllowed", "false");
         servletContextHandler.addServlet(holderDefault, "/");
+
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{servletContextHandler});
         server.setHandler(handlers);
         server.start();
-
-        Settings.getDevicesList().keySet().stream().forEach(key -> {
-            DriverWorker driverWorker = new DriverWorker(key);
-            driverMap.put(key, driverWorker);
-            driverWorker.start();
-            logger.info("driverWorker for {} {}", key, " started");
-        });
 
         if(!Settings.getResultsSendUri().isEmpty()){
             senderWorker = new SenderWorker();
             senderWorker.start();
             logger.info("resSender started");
         }
-
+        Settings.getDevicesList().keySet().stream().forEach(key -> {
+            DriverWorker driverWorker = new DriverWorker(key, senderWorker);
+            driverMap.put(key, driverWorker);
+            driverWorker.start();
+            logger.info("driverWorker for {} {}", key, " started");
+        });
         server.join();
     }
 
@@ -267,4 +264,7 @@ public class Main {
         }
     }
 
+    public static DriverWorker getDriverWorkerByDevise(String device){
+        return driverMap.get(device);
+    }
 }

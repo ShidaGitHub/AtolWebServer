@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 public class Utils {
-    private static Logger logger = LogManager.getLogger(Utils.class);
+    private static final Logger logger = LogManager.getLogger(Utils.class);
     private Utils() {
     }
 
