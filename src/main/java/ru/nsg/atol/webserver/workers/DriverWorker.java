@@ -26,8 +26,12 @@ public class DriverWorker extends Thread {
     private final IFptr fptr = new Fptr();
     private final HashMap<Integer, Boolean> timeQuery = new HashMap<>();
     private final LocalDateTime startDate;
-    private LocalDateTime checkDate;
+    private LocalDateTime checkNotReadyTaskDate;
+    private LocalDateTime checkStatusDeviceDate;
+    private final int checkStatusDeviceDelay;
     private final TaskCompleteListener taskCompleteListener;
+
+    private boolean isDeviceBlocked, isPrinterOverheat;
 
     public DriverWorker(String name, TaskCompleteListener taskCompleteListener) {
         super();
@@ -35,8 +39,11 @@ public class DriverWorker extends Thread {
         this.taskCompleteListener = taskCompleteListener;
         queueToFptr = new LinkedBlockingQueue(100000);
         startDate = LocalDateTime.now();
-        checkDate = LocalDateTime.now();
+        checkNotReadyTaskDate = LocalDateTime.now();
         IntStream.rangeClosed(0, 24).forEachOrdered(i -> timeQuery.put(i, false));
+        checkStatusDeviceDelay = Settings.getDeviceCheckerDelay();
+        checkStatusDeviceDate = LocalDateTime.now();
+        isDeviceBlocked = true;
     }
 
     public void offer(Task task) {
@@ -97,11 +104,25 @@ public class DriverWorker extends Thread {
                 sleepTimeout = 200;
 
                 //Каждые 10 мин проверить базу и при необхоимостии пополнить очередь обработки из базы.
-                if (LocalDateTime.now().getMinute() % 10 == 0 && checkDate.getMinute() != LocalDateTime.now().getMinute()){
-                    checkDate = LocalDateTime.now();
+                if (LocalDateTime.now().getMinute() % 10 == 0 && checkNotReadyTaskDate.getMinute() != LocalDateTime.now().getMinute()){
+                    checkNotReadyTaskDate = LocalDateTime.now();
                     List<Task> notReadyTask = DBProvider.db.getNotReadyTasks(getName());
                     if (notReadyTask != null){
                         notReadyTask.stream().forEach(task -> offer(task));
+                    }
+                }
+
+                //Каждые checkStatusDeviceDelay мин проверить состояние кассы.
+                if (LocalDateTime.now().getMinute() % checkStatusDeviceDelay == 0 && checkStatusDeviceDate.getMinute() != LocalDateTime.now().getMinute()){
+                    checkStatusDeviceDate = LocalDateTime.now();
+                    try {
+                        fptr.setParam(IFptr.LIBFPTR_PARAM_DATA_TYPE, IFptr.LIBFPTR_DT_STATUS);
+                        fptr.queryData();
+                        isDeviceBlocked = fptr.getParamBool(IFptr.LIBFPTR_PARAM_BLOCKED);
+                        isPrinterOverheat = fptr.getParamBool(IFptr.LIBFPTR_PARAM_PRINTER_OVERHEAT);
+                    }catch (Exception ex){
+                        isDeviceBlocked = true;
+                        logger.error(getName(), ex);
                     }
                 }
 
@@ -130,7 +151,6 @@ public class DriverWorker extends Thread {
                             }
 
                             if (taskResult.getStatus() != 3) {
-                                fptr.setParam(IFptr.LIBFPTR_PARAM_RECEIPT_ELECTRONICALLY, true);
                                 fptr.setParam(IFptr.LIBFPTR_PARAM_JSON_DATA, task.getDataJson().toString());
                                 if (fptr.processJson() >= 0) {
                                     taskResult.setStatus(2);
@@ -168,5 +188,13 @@ public class DriverWorker extends Thread {
                 }
             }
         }
+    }
+
+    public boolean isPrinterOverheat() {
+        return isPrinterOverheat;
+    }
+
+    public boolean isDeviceBlocked() {
+        return isDeviceBlocked;
     }
 }

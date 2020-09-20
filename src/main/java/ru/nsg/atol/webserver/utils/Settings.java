@@ -77,4 +77,13 @@ public class Settings {
             return "password";
         }
     }
+
+    public static int getDeviceCheckerDelay(){
+        try {
+            return getJsonObject().get("deviceChecker").get("delay").toInt();
+        } catch (JsonException | IOException ex) {
+            logger.error("Can't read settings from " + System.getProperty("settings.file"), ex);
+            return 59;
+        }
+    }
 }
