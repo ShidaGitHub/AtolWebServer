@@ -259,7 +259,7 @@ public class Main {
             final SystemTray tray = SystemTray.getSystemTray();
             tray.add(trayIcon);
             trayIcon.setPopupMenu(popup);
-        } catch (IOException | AWTException e) {
+        } catch (IOException | AWTException | IllegalArgumentException e) {
             logger.warn("TrayIcon could not be added.");
         }
     }

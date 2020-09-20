@@ -2,6 +2,9 @@
   "web":{
     "port":16732
   },
+  "deviceChecker":{
+    "delay":10
+  },
   "resultsSend":{
     "uri":"http://127.0.0.1/agent_test/hs/atol/",
     "login":"Atol",
